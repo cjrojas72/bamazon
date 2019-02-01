@@ -22,7 +22,7 @@ function startApp(){
   }).then(function(answer){
 
     if(answer.greetings === "view products"){
-      viewInventory();
+      displayItems();
     }
     else if(answer.greetings === "buy product"){
       buyProduct();
@@ -31,4 +31,55 @@ function startApp(){
       connection.end();
     }
   });
+}
+
+function displayItems(){
+  connection.query("SELECT * FROM products", function(err, results) {
+    if(err) throw err;
+    console.log(results);
+    startApp();
+  });
+}
+
+function buyProduct() {
+  connection.query("SELECT * FROM products", function(err, results) {
+    if(err) throw err;
+
+  inquirer
+    .prompt([
+      {
+        name: "item",
+        type: "rawlist",
+        message: "What is the item you would like to buy?",
+        choices: function() {
+          var itemArr = [];
+          for(var i = 0; i<results.length; i++){
+            itemArr.push(results[i].product_name);
+          }
+          return itemArr;
+        }  
+      },
+      {
+        name: "amount",
+        type: "input",
+        message: "How much would you like to buy?"
+      }
+    ])
+    .then(function(answer) {
+      
+      var item;
+      for(var i=0; i< results.length; i++){
+        if(results[i].product_name === answer.item){
+          item = results[i];
+        }
+      }
+
+      if(item.item_quantity > parseInt(answer.amout)){
+        console.log("great we have in stock!");
+      }
+
+      console.log("You chose" + item);
+    });
+  });
+  startApp();
 }
