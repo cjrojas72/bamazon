@@ -73,13 +73,35 @@ function buyProduct() {
           item = results[i];
         }
       }
+      console.log("You chose " + item.product_name);
+      console.log("We have " + item.stock_quantity + " in stock");
 
-      if(item.item_quantity > parseInt(answer.amout)){
-        console.log("great we have in stock!");
+
+      if(item.stock_quantity > parseInt(answer.amount)){
+
+        var newInventory = item.stock_quantity - answer.amount;
+        var totalPrice = item.price * answer.amount;
+
+        connection.query("UPDATE products SET ? WHERE ?", 
+        [
+          {
+            stock_quantity: newInventory
+          },
+          {
+          item_id: item.item_id
+          }
+        ],
+        function(error){
+          if(error) throw err;
+          console.log("You would like to buy " + answer.amount +" "+item.product_name +" at $"+item.price + " each");
+          console.log("Your total is: $" + totalPrice);
+          startApp();
+        });
       }
-
-      console.log("You chose" + item);
+      else{
+        console.log("sorry we don't have that much you requested in stock");
+        startApp();
+      }
     });
   });
-  startApp();
 }
